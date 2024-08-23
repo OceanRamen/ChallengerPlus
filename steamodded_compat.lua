@@ -1,0 +1,7 @@
+--- STEAMODDED HEADER
+--- MOD_NAME: Challenger+
+--- MOD_ID: challenger
+--- PREFIX: chal
+--- MOD_AUTHOR: [OceanRamen]
+--- MOD_DESCRIPTION: Custom Challenge Mod!
+--- VERSION: 2.0.0-alpha
