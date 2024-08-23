@@ -25,3 +25,14 @@ sources = ["Core/Main.lua"]
 # """
 # match_indent = true
 # overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = "function init_localization()"
+position = "after"
+payload = '''
+localizeChallengeNames()
+'''
+match_indent = true
+overwrite = false

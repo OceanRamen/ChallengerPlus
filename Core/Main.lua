@@ -1,53 +1,7 @@
 local lovely = require("lovely")
 local nfs = require("nativefs")
 
---[[
-- Custom Challenge UI
-- Ability to select vanilla challenges stake and deck
-- API for challenge creation
-- In-game challenge creator
-  - Ability to share challenge code for others to play challenge
-- Custom challenges added by mod
-  - Deck is randomised every Ante [req from doc]
-- Custom Challenges can have variants i.e. options API
-- Challenge Browser [ Long term goal ]
-]]
---TODO: REMOVE FOR RELEASE
-function inspectDepth(tbl, indent, depth)
-  if depth and depth > 5 then
-    return "Depth limit reached"
-  end
-
-  if type(tbl) ~= "table" then
-    return "Not a table"
-  end
-
-  local str = ""
-  indent = indent or 0
-
-  for k, v in pairs(tbl) do
-    local formatting = string.rep("  ", indent) .. tostring(k) .. ": "
-    if type(v) == "table" then
-      str = str .. formatting .. "\n"
-      str = str .. inspectDepth(v, indent + 1, (depth or 0) + 1)
-    elseif type(v) == "function" then
-      str = str .. formatting .. "function\n"
-    elseif type(v) == "boolean" then
-      str = str .. formatting .. tostring(v) .. "\n"
-    else
-      str = str .. formatting .. tostring(v) .. "\n"
-    end
-  end
-
-  return str
-end
-
 Challenger = {}
-
--- assert(
---   load(nfs.read(lovely.mod_dir .. "/Challenger+/UI/challenge_selection.lua"))
--- )()
--- assert(load(nfs.read(lovely.mod_dir .. "/Challenger+/Debug/testing.lua")))()
 
 Challenger.RELEASE = false
 Challenger.VER = "1.0.0"
@@ -82,9 +36,12 @@ Challenge = Object:extend()
   Initializes a new Challenge instance with the given configuration.
   @param config The configuration table to initialize the challenge.
 ]]
-function Challenge:new(config)
+function Challenge:new(id, name, config)
+  self.id = id
+  self.name = name
   tableMerge(self, deepCopy(EMPTY_CONFIG), deepCopy(config))
   table.insert(Challenger.challenges, 1, self)
+  -- Register challenge id with LOC_VARS
 end
 
 --[[
@@ -303,4 +260,20 @@ function deepCopy(orig)
   end
   setmetatable(copy, deepCopy(getmetatable(orig)))
   return copy
+end
+
+assert(
+  load(nfs.read(lovely.mod_dir .. "/Challenger+" .. "/Core/Challenges.lua"))
+)()
+
+-- Insert Challenger.challenges into G.CHALLENGES at run-time
+for k, v in pairs(Challenger.challenges) do
+  print(v.name)
+  table.insert(G.CHALLENGES, #G.CHALLENGES + 1, v)
+end
+
+function localizeChallengeNames()
+  for k, v in pairs(Challenger.challenges) do
+    G.localization.misc.challenge_names[v.id] = v.name
+  end
 end
