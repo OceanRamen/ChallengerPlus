@@ -17,7 +17,7 @@ local EMPTY_CONFIG = {
     modifiers = {},
   },
   jokers = {},
-  consumables = {},
+  consumeables = {},
   vouchers = {},
   deck = {
     type = "Challenge Deck",
@@ -113,7 +113,7 @@ end
   @param consumable The consumable to add.
 ]]
 function Challenge:addConsumable(consumable)
-  table.insert(self.consumables, consumable)
+  table.insert(self.consumeables, consumable)
 end
 
 --[[
@@ -121,7 +121,7 @@ end
   @param consumable_id The ID of the consumable to remove.
 ]]
 function Challenge:removeConsumable(consumable_id)
-  self.consumables = removeItemById(self.consumables, consumable_id)
+  self.consumeables = removeItemById(self.consumeables, consumable_id)
 end
 
 --[[
