@@ -36,12 +36,13 @@ Challenge = Object:extend()
   Initializes a new Challenge instance with the given configuration.
   @param config The configuration table to initialize the challenge.
 ]]
-function Challenge:new(id, name, config)
-  self.id = id
-  self.name = name
-  tableMerge(self, deepCopy(EMPTY_CONFIG), deepCopy(config))
+function Challenge:new(args)
+  self.id = args.id
+  self.name = args.name
+  self.author = args.author or nil
+  self.version = args.version or nil
+  tableMerge(self, deepCopy(EMPTY_CONFIG), deepCopy(args.config))
   table.insert(Challenger.challenges, 1, self)
-  -- Register challenge id with LOC_VARS
 end
 
 --[[
