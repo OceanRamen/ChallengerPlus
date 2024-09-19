@@ -1,0 +1,69 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Insert setup button
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={'''
+position = "before"
+payload = '''
+    not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 2, r = 0.1, hover = true, colour = G.C.RED, button = "setup_challenge_run", shadow = true, id = _id}, nodes={
+        {n=G.UIT.T, config={text = "Setup", scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
+      }},
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 0.2, r = 0.1}, nodes = {}},
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 7, r = 0.1, hover = true, colour = G.C.BLUE, button = "start_challenge_run", shadow = true, id = _id}, nodes={
+        {n=G.UIT.T, config={text = localize('b_play_cap'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
+      }}
+    }} or
+'''
+match_indent = true
+
+# Clean up
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''function G.UIDEF.run_setup(from_game_over)'''
+position = "after"
+payload = '''
+G.challenge_setup_tab = nil
+if Galdur then Galdur.run_setup.choices.challenge = nil end
+'''
+match_indent = true
+
+# Apply and clean up on run start
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''local _challenge = G.challenge_tab or nil'''
+position = "after"
+payload = '''
+_challenge = _challenge or G.challenge_setup_tab or nil
+G.challenge_setup_tab = nil
+if Galdur then Galdur.run_setup.choices.challenge = nil end
+'''
+match_indent = true
+
+# Prevent vouchers intersection
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''for k, v in ipairs(_ch.vouchers) do'''
+position = "after"
+payload = '''
+local is_applied_by_deck = G.GAME.used_vouchers[v.id]
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''G.GAME.starting_voucher_count = (G.GAME.starting_voucher_count or 0) + 1'''
+position = "before"
+payload = '''
+if is_applied_by_deck then return true end
+'''
+match_indent = true
