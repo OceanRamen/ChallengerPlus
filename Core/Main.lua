@@ -192,6 +192,19 @@ function Challenge:removeBannedOther(banned_other_id)
     removeItemById(self.restrictions.banned_other, banned_other_id)
 end
 
+function Challenge:toConfig()
+  return {
+    id = self.id,
+    name = self.name,
+    rules = self.rules,
+    jokers = self.jokers,
+    consumeables = self.consumeables,
+    vouchers = self.vouchers,
+    deck = self.deck,
+    restrictions = self.restrictions,
+  }
+end
+
 --[[
   Helper function to remove an item by its ID from a list.
   @param list The list to search.
@@ -323,11 +336,12 @@ if not found then
 end
 
 assert(load(nfs.read(Challenger.PATH .. "/Core/Challenges.lua")))()
+assert(load(nfs.read(Challenger.PATH .. "/Core/Setup.lua")))()
 
 -- Insert Challenger.challenges into G.CHALLENGES at run-time
 for k, v in pairs(Challenger.challenges) do
   print(v.name)
-  table.insert(G.CHALLENGES, #G.CHALLENGES + 1, v)
+  table.insert(G.CHALLENGES, #G.CHALLENGES + 1, v:toConfig())
 end
 
 function localizeChallengeNames()
