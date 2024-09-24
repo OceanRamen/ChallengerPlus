@@ -22,6 +22,17 @@ payload = '''
 '''
 match_indent = true
 
+# Add challenge info button on select screen
+[[patches]]
+[patches.pattern]
+target = "back.lua"
+pattern = '''name_to_check == 'Challenge Deck' and UIBox_button({button = 'deck_view_challenge', label = {localize(challenge.id, 'challenge_names')},  minw = 2.2, minh = 1, scale = 0.6, id = challenge})'''
+position = "at"
+payload = '''
+name_to_check == 'Challenge Deck' and UIBox_button({button = challenge.id and 'deck_view_challenge' or 'nil', label = {localize(challenge.id or G.challenge_setup_tab.id, 'challenge_names')},  minw = 2.2, minh = 1, scale = 0.6, id = challenge})
+'''
+match_indent = true
+
 # Clean up
 [[patches]]
 [patches.pattern]
@@ -67,3 +78,56 @@ payload = '''
 if is_applied_by_deck then return true end
 '''
 match_indent = true
+
+# Inject Challenge deck to run setup
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "local ordered_names, viewed_deck = {}, 1"
+position = "after"
+payload = '''
+if G.challenge_setup_tab then
+  ordered_names[#ordered_names+1] = inject_challenge_deck(true)
+else
+  inject_challenge_deck(false)
+end
+'''
+match_indent = true
+overwrite = false
+
+# Force select and fallback
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "G.setup_seed = ''"
+position = "after"
+payload = '''
+if G.challenge_setup_tab then
+  G.FUNCS.change_viewed_back({
+    to_key = 1,
+    to_val = "Challenge Deck"
+  })
+  viewed_deck = 1
+elseif type ~= "Continue" and G.GAME.viewed_back.name == "Challenge Deck" then
+  G.FUNCS.change_viewed_back({
+    to_key = 1,
+    to_val = "Red Deck"
+  })
+  viewed_deck = 1
+end
+'''
+match_indent = true
+overwrite = false
+
+# Sync challenge list page
+# TODO: sync pointer arrow on button
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'change_challenge_list_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})"
+position = "at"
+payload = '''
+create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'change_challenge_list_page', current_option = G.challenge_list_page or 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
+'''
+match_indent = true
+overwrite = false

@@ -1,7 +1,27 @@
 -- Return to challenges list and clean up
 function G.FUNCS.back_to_challenge_list(e)
-  G.FUNCS.challenge_list(e)
+  local challenge_copy = G.challenge_setup_tab
+  local challenge_page = math.floor(
+    (get_challenge_int_from_id(challenge_copy.id) - 1) / G.CHALLENGE_PAGE_SIZE
+  ) + 1
   G.challenge_setup_tab = nil
+
+  G.challenge_list_page = challenge_page
+  G.FUNCS.challenge_list(e)
+  G.challenge_list_page = nil
+
+  G.E_MANAGER:add_event(Event({
+    func = function()
+      G.FUNCS.change_challenge_list_page({
+        cycle_config = { current_option = challenge_page },
+      })
+      G.FUNCS.change_challenge_description({
+        config = { id = get_challenge_int_from_id(challenge_copy.id) },
+      })
+      return true
+    end,
+  }))
+
   if Galdur then
     Galdur.run_setup.choices.challenge = nil
   end
@@ -100,4 +120,19 @@ function create_tabs(args)
   end
 
   return create_tabs_ref(args)
+end
+
+function inject_challenge_deck(add)
+  local challenge_deck_config = G.P_CENTERS.b_challenge
+  local is_first_in_pool = G.P_CENTER_POOLS.Back[1] == challenge_deck_config
+  if add then
+    if not is_first_in_pool then
+      table.insert(G.P_CENTER_POOLS.Back, 1, challenge_deck_config)
+    end
+  else
+    if is_first_in_pool then
+      table.remove(G.P_CENTER_POOLS.Back, 1)
+    end
+  end
+  return challenge_deck_config.name
 end
