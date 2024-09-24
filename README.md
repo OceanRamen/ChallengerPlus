@@ -1,1 +1,1 @@
-Created by Myself & [@SleepyG11](https://github.com/SleepyG11)
+Created by [Myself](https://github.com/OceanRamen) & [@SleepyG11](https://github.com/SleepyG11)
