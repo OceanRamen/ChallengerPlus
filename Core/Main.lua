@@ -8,7 +8,7 @@ Challenger.VER = "1.0.0"
 Challenger.VER = Challenger.VER
   .. "-"
   .. (Challenger.RELEASE and "FULL" or "DEV")
-
+Challenger.PATH = ""
 Challenger.challenges = {}
 
 local EMPTY_CONFIG = {
@@ -301,9 +301,28 @@ function attempt_stake_button(_stake, _id)
   }
 end
 
-assert(
-  load(nfs.read(lovely.mod_dir .. "/Challenger+" .. "/Core/Challenges.lua"))
-)()
+local mod_dir = lovely.mod_dir -- Cache the base directory
+local found = false
+local search_str = "challenger"
+
+for _, item in ipairs(nfs.getDirectoryItems(mod_dir)) do
+  local itemPath = mod_dir .. "/" .. item
+  -- Check if the item is a directory and contains the search string
+  if
+    nfs.getInfo(itemPath, "directory") and string.lower(item):find(search_str)
+  then
+    Challenger.PATH = itemPath
+    found = true
+    break
+  end
+end
+
+-- Raise an error if the directory wasn't found
+if not found then
+  error("ERROR: Unable to locate Saturn directory.")
+end
+
+assert(load(nfs.read(Challenger.PATH .. "/Core/Challenges.lua")))()
 
 -- Insert Challenger.challenges into G.CHALLENGES at run-time
 for k, v in pairs(Challenger.challenges) do
