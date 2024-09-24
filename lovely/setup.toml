@@ -11,10 +11,10 @@ pattern = '''not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes
 position = "before"
 payload = '''
     not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={
-      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 2, r = 0.1, hover = true, colour = G.C.RED, button = "setup_challenge_run", shadow = true, id = _id}, nodes={
-        {n=G.UIT.T, config={text = "Setup", scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 4.1, r = 0.1, hover = true, colour = G.C.PURPLE, button = "setup_challenge_run", shadow = true, id = _id}, nodes={
+        {n = G.UIT.O, config = {func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}, object = DynaText({string = {"CUSTOMIZE"},colours = { G.C.UI.TEXT_LIGHT }, shadow = true, float = false, bump = true, silent = true, pop_in = 0.1, scale = 0.5,})}},
       }},
-      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 0.2, r = 0.1}, nodes = {}},
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 0.1, r = 0.1}, nodes = {}},
       {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 7, r = 0.1, hover = true, colour = G.C.BLUE, button = "start_challenge_run", shadow = true, id = _id}, nodes={
         {n=G.UIT.T, config={text = localize('b_play_cap'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
       }}
