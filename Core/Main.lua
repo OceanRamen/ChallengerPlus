@@ -263,6 +263,44 @@ function deepCopy(orig)
   return copy
 end
 
+--[[
+stake button
+]]
+function attemptStakeChal(chal, stake)
+  -- Modified from G.FUNCS.start_setup_run
+  if G.OVERLAY_MENU then
+    G.FUNCS.exit_overlay_menu()
+  end
+  local _seed = G.run_setup_seed and G.setup_seed or G.forced_seed or nil
+  local _challenge = chal or nil
+  local _stake = stake or nil
+  G.FUNCS.start_run(e, { stake = _stake, seed = _seed, challenge = _challenge })
+end
+
+function G.FUNCS.chal_attempt_stake(e)
+  local _chal = G.challenge_tab
+  local _stake = e.config.ref_table["stake"] or 0
+  attemptStakeChal(_chal, _stake)
+end
+
+function attempt_stake_button(_stake)
+  local icon = get_stake_sprite(_stake, 0.75)
+  icon.states.drag.can = false
+  return {
+    n = G.UIT.C,
+    config = {
+      align = "cm",
+      padding = 0.05,
+      r = 0.1,
+      button = "chal_attempt_stake",
+      ref_table = { stake = _stake },
+    },
+    nodes = {
+      { n = G.UIT.O, config = { object = icon } },
+    },
+  }
+end
+
 assert(
   load(nfs.read(lovely.mod_dir .. "/Challenger+" .. "/Core/Challenges.lua"))
 )()

@@ -64,3 +64,20 @@ payload = '''
       }}
 '''
 ovewrite = true
+
+# Insert setup button
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={'''
+position = "before"
+payload = '''
+    not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 7, r = 0.1, hover = true, colour = G.C.BLUE, button = "start_challenge_run", shadow = true, id = _id}, nodes={
+        {n=G.UIT.T, config={text = localize('b_play_cap'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
+      }},
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 0.2, r = 0.1}, nodes = {}},
+      attempt_stake_button(8),
+    }} or
+'''
+match_indent = true
