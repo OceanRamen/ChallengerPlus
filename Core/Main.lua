@@ -272,18 +272,18 @@ function attemptStakeChal(chal, stake)
     G.FUNCS.exit_overlay_menu()
   end
   local _seed = G.run_setup_seed and G.setup_seed or G.forced_seed or nil
-  local _challenge = chal or nil
+  local _challenge = G.CHALLENGES[chal] or nil
   local _stake = stake or nil
   G.FUNCS.start_run(e, { stake = _stake, seed = _seed, challenge = _challenge })
 end
 
 function G.FUNCS.chal_attempt_stake(e)
-  local _chal = G.challenge_tab
+  local _chal_id = e.config.ref_table["chal"]
   local _stake = e.config.ref_table["stake"] or 0
-  attemptStakeChal(_chal, _stake)
+  attemptStakeChal(_chal_id, _stake)
 end
 
-function attempt_stake_button(_stake)
+function attempt_stake_button(_stake, _id)
   local icon = get_stake_sprite(_stake, 0.75)
   icon.states.drag.can = false
   return {
@@ -293,7 +293,7 @@ function attempt_stake_button(_stake)
       padding = 0.05,
       r = 0.1,
       button = "chal_attempt_stake",
-      ref_table = { stake = _stake },
+      ref_table = { stake = _stake, chal = _id },
     },
     nodes = {
       { n = G.UIT.O, config = { object = icon } },
