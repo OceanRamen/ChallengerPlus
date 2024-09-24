@@ -8,7 +8,7 @@ Challenger.VER = "1.0.0"
 Challenger.VER = Challenger.VER
   .. "-"
   .. (Challenger.RELEASE and "FULL" or "DEV")
-
+Challenger.PATH = ""
 Challenger.challenges = {}
 
 local EMPTY_CONFIG = {
@@ -276,10 +276,67 @@ function deepCopy(orig)
   return copy
 end
 
-assert(
-  load(nfs.read(lovely.mod_dir .. "/Challenger+" .. "/Core/Challenges.lua"))
-)()
-assert(load(nfs.read(lovely.mod_dir .. "/Challenger+" .. "/Core/Setup.lua")))()
+--[[
+stake button
+]]
+function attemptStakeChal(chal, stake)
+  -- Modified from G.FUNCS.start_setup_run
+  if G.OVERLAY_MENU then
+    G.FUNCS.exit_overlay_menu()
+  end
+  local _seed = G.run_setup_seed and G.setup_seed or G.forced_seed or nil
+  local _challenge = G.CHALLENGES[chal] or nil
+  local _stake = stake or nil
+  G.FUNCS.start_run(e, { stake = _stake, seed = _seed, challenge = _challenge })
+end
+
+function G.FUNCS.chal_attempt_stake(e)
+  local _chal_id = e.config.ref_table["chal"]
+  local _stake = e.config.ref_table["stake"] or 0
+  attemptStakeChal(_chal_id, _stake)
+end
+
+function attempt_stake_button(_stake, _id)
+  local icon = get_stake_sprite(_stake, 0.75)
+  icon.states.drag.can = false
+  return {
+    n = G.UIT.C,
+    config = {
+      align = "cm",
+      padding = 0.05,
+      r = 0.1,
+      button = "chal_attempt_stake",
+      ref_table = { stake = _stake, chal = _id },
+    },
+    nodes = {
+      { n = G.UIT.O, config = { object = icon } },
+    },
+  }
+end
+
+local mod_dir = lovely.mod_dir -- Cache the base directory
+local found = false
+local search_str = "challenger"
+
+for _, item in ipairs(nfs.getDirectoryItems(mod_dir)) do
+  local itemPath = mod_dir .. "/" .. item
+  -- Check if the item is a directory and contains the search string
+  if
+    nfs.getInfo(itemPath, "directory") and string.lower(item):find(search_str)
+  then
+    Challenger.PATH = itemPath
+    found = true
+    break
+  end
+end
+
+-- Raise an error if the directory wasn't found
+if not found then
+  error("ERROR: Unable to locate Saturn directory.")
+end
+
+assert(load(nfs.read(Challenger.PATH .. "/Core/Challenges.lua")))()
+assert(load(nfs.read(Challenger.PATH .. "/Core/Setup.lua")))()
 
 -- Insert Challenger.challenges into G.CHALLENGES at run-time
 for k, v in pairs(Challenger.challenges) do
