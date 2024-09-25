@@ -136,3 +136,56 @@ function inject_challenge_deck(add)
   end
   return challenge_deck_config.name
 end
+
+--[[
+Record and display highest stake challenge was won on.
+]]
+function set_challenge_usage()
+  if
+    (G.GAME.selected_back == Back(G.P_CENTERS.b_challenge))
+    and G.GAME.challenge
+  then
+    local chal_key = G.GAME.challenge
+    G.PROFILES[G.SETTINGS.profile].chal_usage =
+      G.PROFILES[G.SETTINGS.profile].chal_usage
+    if G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key] then
+      G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key].count = G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key].count
+        + 1
+    else
+      G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key] =
+        { count = 1, wins = {}, losses = {} }
+    end
+    G:save_settings()
+  end
+end
+
+function set_challenge_win()
+  if
+    (G.GAME.selected_back == Back(G.P_CENTERS.b_challenge))
+    and G.GAME.challenge
+  then
+    local chal_key = G.GAME.challenge
+    G.PROFILES[G.SETTINGS.profile].chal_usage = G.PROFILES[G.SETTINGS.profile].chal_usage
+      or {}
+    if not G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key] then
+      G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key] =
+        { count = 1, wins = {}, losses = {} }
+    end
+    if G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key] then
+      G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key].wins[G.GAME.stake] = (
+        G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key].wins[G.GAME.stake]
+        or 0
+      ) + 1
+      for i = 1, G.GAME.stake do
+        G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key].wins[i] = (
+          G.PROFILES[G.SETTINGS.profile].chal_usage[chal_key].wins[i] or 1
+        )
+      end
+    end
+    G:save_settings()
+  end
+end
+
+function get_challenge_win_stake(_chal_key) end
+
+function get_challenge_win_sticker(_chal) end

@@ -337,6 +337,7 @@ end
 
 assert(load(nfs.read(Challenger.PATH .. "/Core/Challenges.lua")))()
 assert(load(nfs.read(Challenger.PATH .. "/Core/Setup.lua")))()
+assert(load(nfs.read(Challenger.PATH .. "/Debug/testing.lua")))()
 
 -- Insert Challenger.challenges into G.CHALLENGES at run-time
 for k, v in pairs(Challenger.challenges) do
