@@ -41,6 +41,7 @@ pattern = '''function G.UIDEF.run_setup(from_game_over)'''
 position = "after"
 payload = '''
 G.challenge_setup_tab = nil
+G.challenge_setup_use_override = nil
 if Galdur then Galdur.run_setup.choices.challenge = nil end
 '''
 match_indent = true
@@ -79,7 +80,8 @@ if is_applied_by_deck then return true end
 '''
 match_indent = true
 
-# Inject Challenge deck to run setup
+# Force select Challenge Deck
+# TODO: fix Red Deck on end of list (???)
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -87,33 +89,26 @@ pattern = "local ordered_names, viewed_deck = {}, 1"
 position = "after"
 payload = '''
 if G.challenge_setup_tab then
-  ordered_names[#ordered_names+1] = inject_challenge_deck(true)
-else
-  inject_challenge_deck(false)
+  G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
+  ordered_names = { "Challenge Deck" }
+elseif type ~= "Continue" and G.GAME.viewed_back.name == "Challenge Deck" then
+  G.GAME.viewed_back:change_to(G.P_CENTERS.b_red)
 end
 '''
 match_indent = true
 overwrite = false
 
-# Force select and fallback
+# Allow Challenge Deck to be viewed
 [[patches]]
 [patches.pattern]
-target = "functions/UI_definitions.lua"
-pattern = "G.setup_seed = ''"
-position = "after"
+target = "functions/button_callbacks.lua"
+pattern = "G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[args.to_key])"
+position = "at"
 payload = '''
-if G.challenge_setup_tab then
-  G.FUNCS.change_viewed_back({
-    to_key = 1,
-    to_val = "Challenge Deck"
-  })
-  viewed_deck = 1
-elseif type ~= "Continue" and G.GAME.viewed_back.name == "Challenge Deck" then
-  G.FUNCS.change_viewed_back({
-    to_key = 1,
-    to_val = "Red Deck"
-  })
-  viewed_deck = 1
+if G.challenge_setup_tab and args.to_val == "Challenge Deck" then
+  G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
+else
+  G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[args.to_key])
 end
 '''
 match_indent = true
@@ -128,6 +123,110 @@ pattern = "create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 
 position = "at"
 payload = '''
 create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'change_challenge_list_page', current_option = G.challenge_list_page or 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
+'''
+match_indent = true
+overwrite = false
+
+# Modifiers order
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if self.GAME.stake >= 2 then"
+position = "before"
+payload = '''
+local function apply_stake(self)
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.selected_back:apply_to_run()"
+position = "before"
+payload = '''
+end
+local function apply_deck(self)
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.selected_back:apply_to_run()"
+position = "after"
+payload = '''
+end
+local function apply_challenge(self)
+'''
+match_indent = true
+overwrite = false
+
+# Alter game modifiers order and write in game object
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.round_resets.hands = self.GAME.starting_params.hands"
+position = "before"
+payload = '''
+end
+if G.challenge_setup_use_override then
+  self.GAME.challenger_plus_challenge_setup_order = G.challenge_setup_order or 1
+  if G.challenge_setup_order == 1 then
+    apply_stake(self)
+    apply_deck(self)
+    apply_challenge(self)
+  elseif G.challenge_setup_order == 2 then
+    apply_challenge(self)
+    apply_stake(self)
+    apply_deck(self)
+  else
+    apply_stake(self)
+    apply_deck(self)
+    apply_challenge(self)
+  end
+else
+  self.GAME.challenge_setup_order = nil
+  apply_stake(self)
+  apply_deck(self)
+  apply_challenge(self)
+end
+'''
+match_indent = true
+overwrite = false
+
+# Read order value from game object
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.FUNCS.start_run = function(e, args)"
+position = "after"
+payload = '''
+if G.challenge_tab and G.GAME.challenger_plus_challenge_setup_order then
+  G.challenge_setup_order = G.GAME.challenger_plus_challenge_setup_order
+  G.challenge_setup_use_override = true
+end
+'''
+match_indent = true
+overwrite = false
+
+
+# Insert order option cycle
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''{n=G.UIT.R, config={align = "cm", padding = 0.05, minh = 0.9}, nodes={'''
+position = "before"
+payload = '''
+(type == "New Run" and G.challenge_setup_tab) and {n=G.UIT.R, config={align = "cm", padding = 0.05}, nodes={
+  {n=G.UIT.R, config={align = "cm"}, nodes = {
+    {n = G.UIT.T, config = { align = "cm", padding = 0.1, text = "Run modifiers order", colour = G.C.UI.TEXT_LIGHT, scale = 0.4 }},
+  }},
+  {n=G.UIT.R, config={align = "cm"}, nodes = {
+    create_option_cycle({options = { "Stake+Deck/Challenge", "Challenge/Stake+Deck" }, opt_callback = 'challenger_plus_update_order', current_option = G.challenge_setup_order, colour = G.C.RED, scale = 0.8, w = 2})
+  }},
+}} or nil,
 '''
 match_indent = true
 overwrite = false

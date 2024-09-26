@@ -5,6 +5,7 @@ function G.FUNCS.back_to_challenge_list(e)
     (get_challenge_int_from_id(challenge_copy.id) - 1) / G.CHALLENGE_PAGE_SIZE
   ) + 1
   G.challenge_setup_tab = nil
+  G.challenge_setup_use_override = nil
 
   G.challenge_list_page = challenge_page
   G.FUNCS.challenge_list(e)
@@ -48,6 +49,8 @@ function G.FUNCS.setup_challenge_run(e)
   end
 
   G.challenge_setup_tab = challenge_copy
+  G.challenge_setup_order = G.challenge_setup_order or 1
+  G.challenge_setup_use_override = true
   if Galdur then
     Galdur.run_setup.choices.challenge = G.challenge_setup_tab
   end
@@ -122,17 +125,6 @@ function create_tabs(args)
   return create_tabs_ref(args)
 end
 
-function inject_challenge_deck(add)
-  local challenge_deck_config = G.P_CENTERS.b_challenge
-  local is_first_in_pool = G.P_CENTER_POOLS.Back[1] == challenge_deck_config
-  if add then
-    if not is_first_in_pool then
-      table.insert(G.P_CENTER_POOLS.Back, 1, challenge_deck_config)
-    end
-  else
-    if is_first_in_pool then
-      table.remove(G.P_CENTER_POOLS.Back, 1)
-    end
-  end
-  return challenge_deck_config.name
+function G.FUNCS.challenger_plus_update_order(arg)
+  G.challenge_setup_order = arg.to_key or 1
 end
