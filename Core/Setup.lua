@@ -128,3 +128,16 @@ end
 function G.FUNCS.challenger_plus_update_order(arg)
   G.challenge_setup_order = arg.to_key or 1
 end
+
+function iterate_challenge_deck(t)
+  local index = 0
+  return function()
+    index = index + 1
+    if t[index] then
+      local _card = t[index]
+      local key = _card.s .. "_" .. _card.r
+      return key, G.P_CARDS[key], _card
+    end
+    return nil
+  end
+end

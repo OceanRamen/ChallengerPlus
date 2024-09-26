@@ -211,6 +211,40 @@ end
 match_indent = true
 overwrite = false
 
+# Override deck
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if not card_protos then"
+position = "at"
+payload = '''
+if not card_protos or (G.challenge_setup_use_override and G.challenge_setup_order == 2) then
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "for k, v in pairs(self.P_CARDS) do"
+position = "at"
+payload = '''
+for k, v, _ch_card in ((args.challenge and args.challenge.deck and args.challenge.deck.cards and G.challenge_setup_use_override and G.challenge_setup_order == 2) and iterate_challenge_deck(args.challenge.deck.cards) or pairs(self.P_CARDS)) do
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "local keep, _e, _d, _g = true, nil, nil, nil"
+position = "at"
+payload = '''
+local keep, _e, _d, _g = true, _ch_card and _ch_card.e or nil, _ch_card and _ch_card.d or nil, _ch_card and _ch_card.g or nil
+'''
+match_indent = true
+overwrite = false
+
 
 # Insert order option cycle
 [[patches]]
