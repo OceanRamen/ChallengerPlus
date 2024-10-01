@@ -81,16 +81,16 @@ if is_applied_by_deck then return true end
 match_indent = true
 
 # Force select Challenge Deck
-# TODO: fix Red Deck on end of list (???)
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
-pattern = "local ordered_names, viewed_deck = {}, 1"
+pattern = "local lwidth, rwidth = 1.4, 1.8"
 position = "after"
 payload = '''
 if G.challenge_setup_tab then
   G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
-  ordered_names = { "Challenge Deck" }
+  table.insert(ordered_names, "Challenge Deck")
+  viewed_deck = #ordered_names
 elseif type ~= "Continue" and G.GAME.viewed_back.name == "Challenge Deck" then
   G.GAME.viewed_back:change_to(G.P_CENTERS.b_red)
 end
