@@ -91,14 +91,15 @@ if G.challenge_setup_tab then
   G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
   table.insert(ordered_names, "Challenge Deck")
   viewed_deck = #ordered_names
-elseif type ~= "Continue" and G.GAME.viewed_back.name == "Challenge Deck" then
+  table.insert(ordered_names, RANDOM_CHALLENGE_DECK.name)
+elseif type ~= "Continue" and (G.GAME.viewed_back.name == "Challenge Deck" or G.GAME.viewed_back.name == RANDOM_CHALLENGE_DECK.name) then
   G.GAME.viewed_back:change_to(G.P_CENTERS.b_red)
 end
 '''
 match_indent = true
 overwrite = false
 
-# Allow Challenge Deck to be viewed
+# Allow Challenge Deck and Random Challenge Deck to be viewed
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -107,6 +108,8 @@ position = "at"
 payload = '''
 if G.challenge_setup_tab and args.to_val == "Challenge Deck" then
   G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
+elseif G.challenge_setup_tab and args.to_val == RANDOM_CHALLENGE_DECK.name then
+  G.GAME.viewed_back:change_to(RANDOM_CHALLENGE_DECK)
 else
   G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[args.to_key])
 end
@@ -203,6 +206,10 @@ target = "functions/button_callbacks.lua"
 pattern = "G.FUNCS.start_run = function(e, args)"
 position = "after"
 payload = '''
+if G.GAME.challenger_plus_random_deck then
+  G.GAME.selected_back = Back(RANDOM_CHALLENGE_DECK)
+  G.GAME.selected_back_key = RANDOM_CHALLENGE_DECK
+end
 if G.challenge_tab and G.GAME.challenger_plus_challenge_setup_order then
   G.challenge_setup_order = G.GAME.challenger_plus_challenge_setup_order
   G.challenge_setup_use_override = true
@@ -249,7 +256,6 @@ local keep, _e, _d, _g = true, _ch_card and _ch_card.e or nil, _ch_card and _ch_
 match_indent = true
 overwrite = false
 
-
 # Insert order option cycle
 [[patches]]
 [patches.pattern]
@@ -265,6 +271,59 @@ payload = '''
     create_option_cycle({options = { "Stake+Deck/Challenge", "Challenge/Stake+Deck" }, opt_callback = 'challenger_plus_update_order', current_option = G.challenge_setup_order, colour = G.C.RED, scale = 0.8, w = 2})
   }},
 }} or nil,
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''b_challenge=        {name = "Challenge Deck",   stake = 1, unlocked = true,order = 16, pos = {x=0,y=4}, set = "Back", config = {}, omit = true}, '''
+position = "after"
+payload = '''
+b_random_challenge=RANDOM_CHALLENGE_DECK,
+'''
+match_indent = true
+overwrite = false
+
+# Random Challenge Deck
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.selected_back:apply_to_run()"
+position = "before"
+payload = '''
+if selected_back.name == RANDOM_CHALLENGE_DECK.name then
+  self.GAME.challenger_plus_random_deck = true
+  local random_challenge_deck = pick_random_deck()
+  self.GAME.selected_back = Back(random_challenge_deck)
+  self.GAME.selected_back_key = random_challenge_deck
+end
+'''
+match_indent = true
+overwrite = false
+
+# Without this game crashes, idk why
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "function get_deck_from_name(_name)"
+position = "after"
+payload = '''
+if _name == RANDOM_CHALLENGE_DECK.name then
+  return RANDOM_CHALLENGE_DECK
+end
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = "function init_localization()"
+position = "after"
+payload = '''
+setup_random_deck_localization()
 '''
 match_indent = true
 overwrite = false

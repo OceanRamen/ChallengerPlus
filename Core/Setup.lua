@@ -141,3 +141,30 @@ function iterate_challenge_deck(t)
     return nil
   end
 end
+
+function pick_random_deck()
+  local deck = pseudorandom_element(G.P_CENTER_POOLS.Back)
+  return deck
+end
+
+RANDOM_CHALLENGE_DECK = {
+  key = "b_random_challenge",
+  name = "Random Challenge Deck",
+  stake = 1,
+  unlocked = true,
+  order = 17,
+  pos = { x = 0, y = 4 },
+  set = "Back",
+  config = {},
+  omit = true,
+}
+
+function setup_random_deck_localization()
+  G.localization.descriptions.Back.b_random_challenge = {
+    name = "Random Challenge Deck",
+    text = {
+      "Each run, deck",
+      "selected {C:attention}randomly",
+    },
+  }
+end
