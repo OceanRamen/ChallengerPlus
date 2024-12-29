@@ -316,14 +316,3 @@ end
 '''
 match_indent = true
 overwrite = false
-
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = "function init_localization()"
-position = "after"
-payload = '''
-setup_random_deck_localization()
-'''
-match_indent = true
-overwrite = false

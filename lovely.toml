@@ -1,0 +1,27 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.module]
+source = 'libs/nativefs.lua'
+before = 'main.lua'
+name = 'nativefs'
+
+[[patches]]
+[patches.copy]
+target = "main.lua"
+position = "append"
+sources = ["index.lua"]
+
+[[patches]]
+[patches.pattern]
+target = "functions/misc_functions.lua"
+pattern = "function init_localization()"
+position = "after"
+payload = '''
+if not CPLUS.current_mod then CPLUS.process_loc_text() end
+'''
+match_indent = true
+overwrite = false

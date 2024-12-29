@@ -1,115 +1,58 @@
-Challenge:new({
-  id = "example_challenge",
-  name = "example_name",
-  author = "example_author",
-  version = "1.0.0",
-  config = {
-    rules = {
-      custom = {
-        --{id = 'no_reward'},
-        { id = "no_reward_specific", value = "Big" },
-        { id = "no_extra_hand_money" },
-        { id = "no_interest" },
-      },
-      modifiers = {
-        { id = "dollars", value = 100 },
-        { id = "discards", value = 1 },
-        { id = "hands", value = 6 },
-        { id = "reroll_cost", value = 10 },
-        { id = "joker_slots", value = 8 },
-        { id = "consumable_slots", value = 3 },
-        { id = "hand_size", value = 5 },
-      },
-    },
-    jokers = {
-      { id = "j_egg" },
-      { id = "j_egg" },
-      { id = "j_egg" },
-      { id = "j_egg" },
-      { id = "j_egg", edition = "foil", eternal = true },
-    },
-    consumeables = {
-      { id = "c_sigil" },
-    },
-    vouchers = {
-      { id = "v_hieroglyph" },
-    },
-    deck = {
-      --enhancement = 'm_glass',
-      --edition = 'foil',
-      --gold_seal = true,
-      --yes_ranks = {['3'] = true,T = true},
-      --no_ranks = {['4'] = true},
-      --yes_suits = {S=true},
-      --no_suits = {D=true},
-      cards = {
-        { s = "D", r = "2", e = "m_glass" },
-        { s = "D", r = "3", e = "m_glass" },
-        { s = "D", r = "4", e = "m_glass" },
-        { s = "D", r = "5", e = "m_glass" },
-        { s = "D", r = "6", e = "m_glass" },
-        { s = "D", r = "7", e = "m_glass" },
-        { s = "D", r = "8", e = "m_glass" },
-        { s = "D", r = "9", e = "m_glass" },
-        { s = "D", r = "T", e = "m_glass" },
-        { s = "D", r = "J", e = "m_glass" },
-        { s = "D", r = "Q", e = "m_glass" },
-        { s = "D", r = "K", e = "m_glass" },
-        { s = "D", r = "A", e = "m_glass" },
-        { s = "C", r = "2", e = "m_glass" },
-        { s = "C", r = "3", e = "m_glass" },
-        { s = "C", r = "4", e = "m_glass" },
-        { s = "C", r = "5", e = "m_glass" },
-        { s = "C", r = "6", e = "m_glass" },
-        { s = "C", r = "7", e = "m_glass" },
-        { s = "C", r = "8", e = "m_glass" },
-        { s = "C", r = "9", e = "m_glass" },
-        { s = "C", r = "T", e = "m_glass" },
-        { s = "C", r = "J", e = "m_glass" },
-        { s = "C", r = "Q", e = "m_glass" },
-        { s = "C", r = "K", e = "m_glass" },
-        { s = "C", r = "A", e = "m_glass" },
-        { s = "H", r = "2", e = "m_glass" },
-        { s = "H", r = "3", e = "m_glass" },
-        { s = "H", r = "4", e = "m_glass" },
-        { s = "H", r = "5", e = "m_glass" },
-        { s = "H", r = "6", e = "m_glass" },
-        { s = "H", r = "7", e = "m_glass" },
-        { s = "H", r = "8", e = "m_glass" },
-        { s = "H", r = "9", e = "m_glass" },
-        { s = "H", r = "T", e = "m_glass" },
-        { s = "H", r = "J", e = "m_glass" },
-        { s = "H", r = "Q", e = "m_glass" },
-        { s = "H", r = "K", e = "m_glass" },
-        { s = "H", r = "A", e = "m_glass" },
-        { s = "S", r = "2", e = "m_glass" },
-        { s = "S", r = "3", e = "m_glass" },
-        { s = "S", r = "4", e = "m_glass" },
-        { s = "S", r = "5", e = "m_glass" },
-        { s = "S", r = "6", e = "m_glass" },
-        { s = "S", r = "7", e = "m_glass" },
-        { s = "S", r = "8", e = "m_glass" },
-        { s = "S", r = "9", e = "m_glass" },
-        { s = "S", r = "T", e = "m_glass" },
-        { s = "S", r = "J", e = "m_glass" },
-        { s = "S", r = "Q", e = "m_glass" },
-        { s = "S", r = "K", e = "m_glass" },
-        { s = "S", r = "A", e = "m_glass" },
-      },
-      type = "Challenge Deck",
-    },
-    restrictions = {
-      banned_cards = {
-        { id = "j_joker" },
-        { id = "j_egg" },
-      },
-      banned_tags = {
-        { id = "tag_garbage" },
-        { id = "tag_handy" },
-      },
-      banned_other = {
-        { id = "bl_wall", type = "blind" },
-      },
-    },
-  },
-})
+local nfs = require("nativefs")
+
+assert(load(nfs.read(CPLUS.mod_dir .. "structures/challenge.lua")))()
+
+assert(load(nfs.read(CPLUS.mod_dir .. "structures/modifier.lua")))()
+
+local CHALLENGES = {
+	empty_challenge = CPlusChallenge:get_empty(),
+
+	--- @type table<string, CPlusChallenge>
+	loaded_challenges = {},
+
+	--- @type table<string, CPlusModifier>
+	loaded_modifiers = {},
+}
+CPLUS.CHALLENGES = CHALLENGES
+
+--- @return CPl
+function CHALLENGES.new_challenge(id, meta, config)
+	local ch = CPlusChallenge:new(id, meta, config)
+	CHALLENGES.loaded_challenges[ch.id] = ch
+	return ch
+end
+--- @return CPlusModifier
+function CHALLENGES.new_modifier(id, meta)
+	local mod = CPlusModifier:new(id, meta)
+	CHALLENGES.loaded_modifiers[mod.id] = mod
+	return mod
+end
+
+function CHALLENGES.apply_modifier(arg)
+	local mod = CHALLENGES.loaded_modifiers[arg.id]
+	if mod then
+		mod:apply_to_run(arg)
+	end
+end
+
+function CHALLENGES.init()
+	-- Load modifiers
+	for _, item in ipairs(nfs.getDirectoryItems(CPLUS.mod_dir .. "modifiers")) do
+		local item_path = CPLUS.mod_dir .. "modifiers/" .. item
+		if nfs.getInfo(item_path, "file") then
+			assert(load(nfs.read(item_path)))()
+		end
+	end
+	-- Load challenges
+	for _, item in ipairs(nfs.getDirectoryItems(CPLUS.mod_dir .. "challenges")) do
+		local item_path = CPLUS.mod_dir .. "challenges/" .. item
+		if nfs.getInfo(item_path, "file") then
+			assert(load(nfs.read(item_path)))()
+		end
+	end
+
+	for k, ch in pairs(CHALLENGES.loaded_challenges) do
+		print(k)
+		table.insert(G.CHALLENGES, ch:to_config())
+	end
+end

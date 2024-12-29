@@ -1,0 +1,16 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# Apply modifiers
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if v.id == 'no_reward' then"
+position = "before"
+payload = """
+CPLUS.CHALLENGES.apply_modifier(v)
+"""
+match_indent = true
+overwrite = false
