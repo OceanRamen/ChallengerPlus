@@ -27,8 +27,8 @@ function CPLUS.emplace_steamodded()
 end
 
 function CPLUS.init()
+	assert(load(nfs.read(CPLUS.mod_dir .. "core/ui.lua")))()
 	assert(load(nfs.read(CPLUS.mod_dir .. "core/challenges.lua")))()
-
 	assert(load(nfs.read(CPLUS.mod_dir .. "core/setup.lua")))()
 
 	CPLUS.CHALLENGES.init()

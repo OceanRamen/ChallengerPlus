@@ -15,7 +15,7 @@ local CHALLENGES = {
 }
 CPLUS.CHALLENGES = CHALLENGES
 
---- @return CPl
+--- @return CPlusChallenge
 function CHALLENGES.new_challenge(id, meta, config)
 	local ch = CPlusChallenge:new(id, meta, config)
 	CHALLENGES.loaded_challenges[ch.id] = ch
