@@ -1,0 +1,12 @@
+{
+	"id": "cplus",
+	"name": "ChallengerPlus",
+	"display_name": "ChallengerPlus",
+	"author": ["SleepyG11", "OceanRamen"],
+	"description": "Enhanced challenges setup & more challenges",
+	"prefix": "cplus",
+	"main_file": "steamodded.lua",
+	"priority": 0,
+	"version": "1.1.0-dev1",
+	"dependencies": []
+}
