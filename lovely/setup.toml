@@ -1,7 +1,7 @@
 [manifest]
 version = "1.0.0"
 dump_lua = true
-priority = 0
+priority = -10
 
 # Insert setup button
 [[patches]]
@@ -11,9 +11,7 @@ pattern = '''not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes
 position = "before"
 payload = '''
     not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={
-      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 4.1, r = 0.1, hover = true, colour = G.C.PURPLE, button = "setup_challenge_run", shadow = true, id = _id}, nodes={
-        {n = G.UIT.O, config = {func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}, object = DynaText({string = {"CUSTOMIZE"},colours = { G.C.UI.TEXT_LIGHT }, shadow = true, float = false, bump = true, silent = true, pop_in = 0.1, scale = 0.5,})}},
-      }},
+      CPlus.setup.create_challenge_setup_button(_id),
       {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 0.1, r = 0.1}, nodes = {}},
       {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 7, r = 0.1, hover = true, colour = G.C.BLUE, button = "start_challenge_run", shadow = true, id = _id}, nodes={
         {n=G.UIT.T, config={text = localize('b_play_cap'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
@@ -43,6 +41,7 @@ payload = '''
 G.challenge_setup_tab = nil
 G.challenge_setup_use_override = nil
 if Galdur then Galdur.run_setup.choices.challenge = nil end
+CPlus.setup.remove_challenge_deck_from_pool()
 '''
 match_indent = true
 
@@ -56,6 +55,7 @@ payload = '''
 _challenge = _challenge or G.challenge_setup_tab or nil
 G.challenge_setup_tab = nil
 if Galdur then Galdur.run_setup.choices.challenge = nil end
+CPlus.setup.remove_challenge_deck_from_pool()
 '''
 match_indent = true
 
@@ -80,38 +80,21 @@ if is_applied_by_deck then return true end
 '''
 match_indent = true
 
-# Force select Challenge Deck
+# Insert challenge deck for selection
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
-pattern = "local lwidth, rwidth = 1.4, 1.8"
-position = "after"
+pattern = "for k, v in ipairs(G.P_CENTER_POOLS.Back) do"
+position = "before"
 payload = '''
 if G.challenge_setup_tab then
-  G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
-  table.insert(ordered_names, "Challenge Deck")
-  viewed_deck = #ordered_names
-  table.insert(ordered_names, RANDOM_CHALLENGE_DECK.name)
-elseif type ~= "Continue" and (G.GAME.viewed_back.name == "Challenge Deck" or G.GAME.viewed_back.name == RANDOM_CHALLENGE_DECK.name) then
-  G.GAME.viewed_back:change_to(G.P_CENTERS.b_red)
-end
-'''
-match_indent = true
-overwrite = false
-
-# Allow Challenge Deck and Random Challenge Deck to be viewed
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = "G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[args.to_key])"
-position = "at"
-payload = '''
-if G.challenge_setup_tab and args.to_val == "Challenge Deck" then
-  G.GAME.viewed_back:change_to(G.P_CENTERS.b_challenge)
-elseif G.challenge_setup_tab and args.to_val == RANDOM_CHALLENGE_DECK.name then
-  G.GAME.viewed_back:change_to(RANDOM_CHALLENGE_DECK)
+    if CPlus.setup.add_challenge_deck_to_pool() then
+        G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
+    end
 else
-  G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[args.to_key])
+    if CPlus.setup.remove_challenge_deck_from_pool() then 
+        G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
+    end
 end
 '''
 match_indent = true
@@ -137,7 +120,7 @@ target = "game.lua"
 pattern = "if self.GAME.stake >= 2 then"
 position = "before"
 payload = '''
-local function apply_stake(self)
+local function cplus_apply_stake(self)
 '''
 match_indent = true
 overwrite = false
@@ -149,7 +132,7 @@ pattern = "self.GAME.selected_back:apply_to_run()"
 position = "before"
 payload = '''
 end
-local function apply_deck(self)
+local function cplus_apply_deck(self)
 '''
 match_indent = true
 overwrite = false
@@ -161,7 +144,7 @@ pattern = "self.GAME.selected_back:apply_to_run()"
 position = "after"
 payload = '''
 end
-local function apply_challenge(self)
+local function cplus_apply_challenge(self)
 '''
 match_indent = true
 overwrite = false
@@ -177,23 +160,23 @@ end
 if G.challenge_setup_use_override then
   self.GAME.challenger_plus_challenge_setup_order = G.challenge_setup_order or 1
   if G.challenge_setup_order == 1 then
-    apply_stake(self)
-    apply_deck(self)
-    apply_challenge(self)
+    cplus_apply_stake(self)
+    cplus_apply_deck(self)
+    cplus_apply_challenge(self)
   elseif G.challenge_setup_order == 2 then
-    apply_challenge(self)
-    apply_stake(self)
-    apply_deck(self)
+    cplus_apply_challenge(self)
+    cplus_apply_stake(self)
+    cplus_apply_deck(self)
   else
-    apply_stake(self)
-    apply_deck(self)
-    apply_challenge(self)
+    cplus_apply_stake(self)
+    cplus_apply_deck(self)
+    cplus_apply_challenge(self)
   end
 else
   self.GAME.challenge_setup_order = nil
-  apply_stake(self)
-  apply_deck(self)
-  apply_challenge(self)
+  cplus_apply_stake(self)
+  cplus_apply_deck(self)
+  cplus_apply_challenge(self)
 end
 '''
 match_indent = true
@@ -206,10 +189,6 @@ target = "functions/button_callbacks.lua"
 pattern = "G.FUNCS.start_run = function(e, args)"
 position = "after"
 payload = '''
-if G.GAME.challenger_plus_random_deck then
-  G.GAME.selected_back = Back(RANDOM_CHALLENGE_DECK)
-  G.GAME.selected_back_key = RANDOM_CHALLENGE_DECK
-end
 if G.challenge_tab and G.GAME.challenger_plus_challenge_setup_order then
   G.challenge_setup_order = G.GAME.challenger_plus_challenge_setup_order
   G.challenge_setup_use_override = true
@@ -238,7 +217,7 @@ position = "at"
 payload = '''
 local _iterator, _iterator_table = pairs(self.P_CARDS)
 if args.challenge and args.challenge.deck and args.challenge.deck.cards and G.challenge_setup_use_override and G.challenge_setup_order == 2 then
-  _iterator = iterate_challenge_deck(args.challenge.deck.cards)
+  _iterator = CPlus.setup.challenge_deck_iterator(args.challenge.deck.cards)
 end
 for k, v, _ch_card in _iterator, _iterator_table do
 '''
@@ -263,67 +242,7 @@ target = "functions/UI_definitions.lua"
 pattern = '''{n=G.UIT.R, config={align = "cm", padding = 0.05, minh = 0.9}, nodes={'''
 position = "before"
 payload = '''
-(type == "New Run" and G.challenge_setup_tab) and {n=G.UIT.R, config={align = "cm", padding = 0.05}, nodes={
-  {n=G.UIT.R, config={align = "cm"}, nodes = {
-    {n = G.UIT.T, config = { align = "cm", padding = 0.1, text = "Run modifiers order", colour = G.C.UI.TEXT_LIGHT, scale = 0.4 }},
-  }},
-  {n=G.UIT.R, config={align = "cm"}, nodes = {
-    create_option_cycle({options = { "Stake+Deck/Challenge", "Challenge/Stake+Deck" }, opt_callback = 'challenger_plus_update_order', current_option = G.challenge_setup_order, colour = G.C.RED, scale = 0.8, w = 2})
-  }},
-}} or nil,
-'''
-match_indent = true
-overwrite = false
-
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = '''b_challenge=        {name = "Challenge Deck",   stake = 1, unlocked = true,order = 16, pos = {x=0,y=4}, set = "Back", config = {}, omit = true}, '''
-position = "after"
-payload = '''
-b_random_challenge=RANDOM_CHALLENGE_DECK,
-'''
-match_indent = true
-overwrite = false
-
-# Random Challenge Deck
-[[patches]]
-[patches.pattern]
-target = "game.lua"
-pattern = "self.GAME.selected_back:apply_to_run()"
-position = "before"
-payload = '''
-if selected_back.name == RANDOM_CHALLENGE_DECK.name then
-  self.GAME.challenger_plus_random_deck = true
-  local random_challenge_deck = pick_random_deck()
-  self.GAME.selected_back = Back(random_challenge_deck)
-  self.GAME.selected_back_key = random_challenge_deck
-end
-'''
-match_indent = true
-overwrite = false
-
-# Without this game crashes, idk why
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = "function get_deck_from_name(_name)"
-position = "after"
-payload = '''
-if _name == RANDOM_CHALLENGE_DECK.name then
-  return RANDOM_CHALLENGE_DECK
-end
-'''
-match_indent = true
-overwrite = false
-
-[[patches]]
-[patches.pattern]
-target = "functions/misc_functions.lua"
-pattern = "function init_localization()"
-position = "after"
-payload = '''
-setup_random_deck_localization()
+(type == "New Run" and G.challenge_setup_tab) and CPlus.setup.create_challenge_run_modifiers_toggle() or nil,
 '''
 match_indent = true
 overwrite = false

@@ -1,0 +1,11 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -1
+
+# Localization
+[[patches]]
+[patches.module]
+source = 'loc_txt/en-us.lua'
+before = 'main.lua'
+name = 'cplus/localization/en-us'
