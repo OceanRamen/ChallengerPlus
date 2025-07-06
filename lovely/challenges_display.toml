@@ -11,15 +11,20 @@ position = 'at'
 line_prepend = '$indent'
 payload = '''
       {n = G.UIT.R, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes = {
-        challenge.author and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
+        challenge.id and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
+          {n=G.UIT.T, config = {text = "Name", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = ":", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = localize(challenge.id, 'challenge_names'), scale = 0.3, colour = G.C.DARK_EDITION}},
+        }},
+        challenge.cplus_meta and challenge.cplus_meta.author and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
           {n=G.UIT.T, config = {text = "Challenge Author", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
           {n=G.UIT.T, config = {text = ":", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
-          {n=G.UIT.T, config = {text = challenge.author, scale = 0.3, colour = G.C.DARK_EDITION}},
+          {n=G.UIT.T, config = {text = challenge.cplus_meta.author, scale = 0.3, colour = G.C.DARK_EDITION}},
         }},
-        challenge.version and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
+        challenge.cplus_meta and challenge.cplus_meta.version and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
           {n=G.UIT.T, config = {text = "Challenge Version", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
           {n=G.UIT.T, config = {text = ":", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
-          {n=G.UIT.T, config = {text = challenge.version, scale = 0.3, colour = G.C.DARK_EDITION}},
+          {n=G.UIT.T, config = {text = challenge.cplus_meta.version, scale = 0.3, colour = G.C.DARK_EDITION}},
         }},
       }},
       {n = G.UIT.R, config = {align = "cm", colour = G.C.CLEAR}, nodes = {
