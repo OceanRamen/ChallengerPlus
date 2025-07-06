@@ -1,0 +1,248 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = -10
+
+# Insert setup button
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={'''
+position = "before"
+payload = '''
+    not is_row and {n=G.UIT.R, config={align = "cm", minh = 0.9}, nodes={
+      CPlus.setup.create_challenge_setup_button(_id),
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 0.1, r = 0.1}, nodes = {}},
+      {n=G.UIT.C, config={align = "cm", padding = 0.1, minh = 0.7, minw = 7, r = 0.1, hover = true, colour = G.C.BLUE, button = "start_challenge_run", shadow = true, id = _id}, nodes={
+        {n=G.UIT.T, config={text = localize('b_play_cap'), scale = 0.5, colour = G.C.UI.TEXT_LIGHT,func = 'set_button_pip', focus_args = {button = 'x',set_button_pip = true}}}
+      }}
+    }} or
+'''
+match_indent = true
+
+# Add challenge info button on select screen
+[[patches]]
+[patches.pattern]
+target = "back.lua"
+pattern = '''name_to_check == 'Challenge Deck' and UIBox_button({button = 'deck_view_challenge', label = {localize(challenge.id, 'challenge_names')},  minw = 2.2, minh = 1, scale = 0.6, id = challenge})'''
+position = "at"
+payload = '''
+name_to_check == 'Challenge Deck' and UIBox_button({button = challenge.id and 'deck_view_challenge' or 'nil', label = {localize(challenge.id or G.challenge_setup_tab.id, 'challenge_names')},  minw = 2.2, minh = 1, scale = 0.6, id = challenge})
+'''
+match_indent = true
+
+# Clean up
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''function G.UIDEF.run_setup(from_game_over)'''
+position = "after"
+payload = '''
+G.challenge_setup_tab = nil
+G.challenge_setup_use_override = nil
+if Galdur then Galdur.run_setup.choices.challenge = nil end
+CPlus.setup.remove_challenge_deck_from_pool()
+'''
+match_indent = true
+
+# Apply and clean up on run start
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''local _challenge = G.challenge_tab or nil'''
+position = "after"
+payload = '''
+_challenge = _challenge or G.challenge_setup_tab or nil
+G.challenge_setup_tab = nil
+if Galdur then Galdur.run_setup.choices.challenge = nil end
+CPlus.setup.remove_challenge_deck_from_pool()
+'''
+match_indent = true
+
+# Prevent vouchers intersection
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''for k, v in ipairs(_ch.vouchers) do'''
+position = "after"
+payload = '''
+local is_applied_by_deck = G.GAME.used_vouchers[v.id]
+'''
+match_indent = true
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = '''G.GAME.starting_voucher_count = (G.GAME.starting_voucher_count or 0) + 1'''
+position = "before"
+payload = '''
+if is_applied_by_deck then return true end
+'''
+match_indent = true
+
+# Insert challenge deck for selection
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "for k, v in ipairs(G.P_CENTER_POOLS.Back) do"
+position = "before"
+payload = '''
+if G.challenge_setup_tab then
+    if CPlus.setup.add_challenge_deck_to_pool() then
+        G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
+    end
+else
+    if CPlus.setup.remove_challenge_deck_from_pool() then 
+        G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
+    end
+end
+'''
+match_indent = true
+overwrite = false
+
+# Sync challenge list page
+# TODO: sync pointer arrow on button
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = "create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'change_challenge_list_page', current_option = 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})"
+position = "at"
+payload = '''
+create_option_cycle({id = 'challenge_page',scale = 0.9, h = 0.3, w = 3.5, options = challenge_pages, cycle_shoulders = true, opt_callback = 'change_challenge_list_page', current_option = G.challenge_list_page or 1, colour = G.C.RED, no_pips = true, focus_args = {snap_to = true}})
+'''
+match_indent = true
+overwrite = false
+
+# Modifiers order
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if self.GAME.stake >= 2 then"
+position = "before"
+payload = '''
+local function cplus_apply_stake(self)
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.selected_back:apply_to_run()"
+position = "before"
+payload = '''
+end
+local function cplus_apply_deck(self)
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.selected_back:apply_to_run()"
+position = "after"
+payload = '''
+end
+local function cplus_apply_challenge(self)
+'''
+match_indent = true
+overwrite = false
+
+# Alter game modifiers order and write in game object
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "self.GAME.round_resets.hands = self.GAME.starting_params.hands"
+position = "before"
+payload = '''
+end
+if G.challenge_setup_use_override then
+  self.GAME.challenger_plus_challenge_setup_order = G.challenge_setup_order or 1
+  if G.challenge_setup_order == 1 then
+    cplus_apply_stake(self)
+    cplus_apply_deck(self)
+    cplus_apply_challenge(self)
+  elseif G.challenge_setup_order == 2 then
+    cplus_apply_challenge(self)
+    cplus_apply_stake(self)
+    cplus_apply_deck(self)
+  else
+    cplus_apply_stake(self)
+    cplus_apply_deck(self)
+    cplus_apply_challenge(self)
+  end
+else
+  self.GAME.challenge_setup_order = nil
+  cplus_apply_stake(self)
+  cplus_apply_deck(self)
+  cplus_apply_challenge(self)
+end
+'''
+match_indent = true
+overwrite = false
+
+# Read order value from game object
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.FUNCS.start_run = function(e, args)"
+position = "after"
+payload = '''
+if G.challenge_tab and G.GAME.challenger_plus_challenge_setup_order then
+  G.challenge_setup_order = G.GAME.challenger_plus_challenge_setup_order
+  G.challenge_setup_use_override = true
+end
+'''
+match_indent = true
+overwrite = false
+
+# Override deck
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "if not card_protos then"
+position = "at"
+payload = '''
+if not card_protos or (G.challenge_setup_use_override and G.challenge_setup_order == 2) then
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "for k, v in pairs(self.P_CARDS) do"
+position = "at"
+payload = '''
+local _iterator, _iterator_table = pairs(self.P_CARDS)
+if args.challenge and args.challenge.deck and args.challenge.deck.cards and G.challenge_setup_use_override and G.challenge_setup_order == 2 then
+  _iterator = CPlus.setup.challenge_deck_iterator(args.challenge.deck.cards)
+end
+for k, v, _ch_card in _iterator, _iterator_table do
+'''
+match_indent = true
+overwrite = false
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
+pattern = "local keep, _e, _d, _g = true, nil, nil, nil"
+position = "at"
+payload = '''
+local keep, _e, _d, _g = true, _ch_card and _ch_card.e or nil, _ch_card and _ch_card.d or nil, _ch_card and _ch_card.g or nil
+'''
+match_indent = true
+overwrite = false
+
+# Insert order option cycle
+[[patches]]
+[patches.pattern]
+target = "functions/UI_definitions.lua"
+pattern = '''{n=G.UIT.R, config={align = "cm", padding = 0.05, minh = 0.9}, nodes={'''
+position = "before"
+payload = '''
+(type == "New Run" and G.challenge_setup_tab) and CPlus.setup.create_challenge_run_modifiers_toggle() or nil,
+'''
+match_indent = true
+overwrite = false

@@ -1,0 +1,37 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+# libs
+[[patches]]
+[patches.module]
+source = 'libs/nativefs.lua'
+before = 'main.lua'
+name = 'nativefs'
+
+# modules
+[[patches]]
+[patches.module]
+source = 'modules/challenges.lua'
+before = 'main.lua'
+name = 'cplus/challenges'
+
+[[patches]]
+[patches.module]
+source = 'modules/setup.lua'
+before = 'main.lua'
+name = 'cplus/setup'
+
+[[patches]]
+[patches.module]
+source = 'modules/utils.lua'
+before = 'main.lua'
+name = 'cplus/utils'
+
+# main file
+[[patches]]
+[patches.copy]
+target = "main.lua"
+position = "append"
+sources = ["index.lua"]

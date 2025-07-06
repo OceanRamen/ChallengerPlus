@@ -1,0 +1,36 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+[[patches]]
+[patches.regex]
+target = "functions/UI_definitions.lua"
+pattern = '\{n=G\.UIT\.C,\s*config=\{align\s*=\s*"[a-z]+",\s*padding\s*=\s*[0-9.]+,\s*colour\s*=\s*G\.C\.[A-Z_]+,\s*r\s*=\s*[0-9.]+,\s*minw\s*=\s*[0-9]+\},\s*nodes=\{\s*[a-zA-Z_]+,\s*[a-zA-Z_]+\s*\}\s*\}'
+position = 'at'
+line_prepend = '$indent'
+payload = '''
+      {n = G.UIT.R, config={align = "cm", padding = 0.05, colour = G.C.CLEAR}, nodes = {
+        challenge.id and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
+          {n=G.UIT.T, config = {text = "Name", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = ":", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = localize(challenge.id, 'challenge_names'), scale = 0.3, colour = G.C.DARK_EDITION}},
+        }},
+        challenge.cplus_meta and challenge.cplus_meta.author and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
+          {n=G.UIT.T, config = {text = "Challenge Author", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = ":", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = challenge.cplus_meta.author, scale = 0.3, colour = G.C.DARK_EDITION}},
+        }},
+        challenge.cplus_meta and challenge.cplus_meta.version and {n=G.UIT.C, config = {align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1}, nodes = {
+          {n=G.UIT.T, config = {text = "Challenge Version", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = ":", scale = 0.3, colour = G.C.UI.TEXT_LIGHT}},
+          {n=G.UIT.T, config = {text = challenge.cplus_meta.version, scale = 0.3, colour = G.C.DARK_EDITION}},
+        }},
+      }},
+      {n = G.UIT.R, config = {align = "cm", colour = G.C.CLEAR}, nodes = {
+        {n=G.UIT.C, config={align = "cm", padding = 0.1, colour = G.C.L_BLACK, r = 0.1, minw = 3}, nodes={
+          override_rule_list,starting_rule_list
+        }},
+      }}
+'''
+ovewrite = true
