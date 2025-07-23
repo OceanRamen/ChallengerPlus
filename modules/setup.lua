@@ -132,22 +132,7 @@ end
 -- Create deep copy of challenge and proceed run setup
 function G.FUNCS.cplus_setup_challenge_run(e)
 	local from_game_over = false
-	local challenge = G.CHALLENGES[e.config.id]
-
-	local challenge_copy = challenge.toConfig and challenge:toConfig() or {}
-	for k, v in pairs(challenge) do
-		if type(v) ~= "function" then
-			challenge_copy[k] = v
-		end
-	end
-	if challenge.deck then
-		challenge_copy.deck = {}
-		for k, v in pairs(challenge.deck) do
-			if k ~= "type" and type(v) ~= "function" then
-				challenge_copy.deck[k] = v
-			end
-		end
-	end
+	local challenge_copy = G.CHALLENGES[e.config.id]
 
 	G.challenge_setup_tab = challenge_copy
 	G.challenge_setup_order = G.challenge_setup_order or 1

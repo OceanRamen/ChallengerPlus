@@ -212,6 +212,18 @@ overwrite = false
 [[patches]]
 [patches.pattern]
 target = "game.lua"
+pattern = "selected_back = get_deck_from_name(selected_back)"
+position = "before"
+payload = '''
+if G.challenge_setup_use_override then selected_back = (self.GAME.viewed_back and self.GAME.viewed_back.name) or self.GAME.selected_back and self.GAME.selected_back.name or 'Red Deck' end
+'''
+match_indent = true
+overwrite = false
+
+
+[[patches]]
+[patches.pattern]
+target = "game.lua"
 pattern = "for k, v in pairs(self.P_CARDS) do"
 position = "at"
 payload = '''
