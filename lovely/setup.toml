@@ -87,14 +87,14 @@ target = "functions/UI_definitions.lua"
 pattern = "for k, v in ipairs(G.P_CENTER_POOLS.Back) do"
 position = "before"
 payload = '''
+if CPlus.setup.remove_challenge_deck_from_pool() then
+    G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
+end
 if G.challenge_setup_tab then
-    if CPlus.setup.add_challenge_deck_to_pool() then
-        G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
-    end
-else
-    if CPlus.setup.remove_challenge_deck_from_pool() then 
-        G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
-    end
+    CPlus.setup.add_challenge_deck_to_pool()
+    G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
+elseif G.GAME.viewed_back.name == "Challenge Deck" and type and type == "New Run" then
+    G.GAME.viewed_back:change_to(G.P_CENTER_POOLS.Back[1])
 end
 '''
 match_indent = true

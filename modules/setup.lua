@@ -85,20 +85,18 @@ CPlus.setup = {
 	end,
 
 	remove_challenge_deck_from_pool = function()
-		if G.P_CENTER_POOLS.Back.__cplus_inserted_challenge then
-			table.remove(G.P_CENTER_POOLS.Back, 1)
-			G.P_CENTER_POOLS.Back.__cplus_inserted_challenge = nil
-			return true
+		for k, back in ipairs(G.P_CENTER_POOLS.Back) do
+			if back == G.P_CENTERS.b_challenge then
+				table.remove(G.P_CENTER_POOLS.Back, k)
+				return true
+			end
 		end
 		return false
 	end,
 	add_challenge_deck_to_pool = function()
-		if not G.P_CENTER_POOLS.Back.__cplus_inserted_challenge then
-			table.insert(G.P_CENTER_POOLS.Back, 1, G.P_CENTERS.b_challenge)
-			G.P_CENTER_POOLS.Back.__cplus_inserted_challenge = true
-			return true
-		end
-		return false
+		local is_removed = CPlus.setup.remove_challenge_deck_from_pool()
+		table.insert(G.P_CENTER_POOLS.Back, 1, G.P_CENTERS.b_challenge)
+		return not is_removed
 	end,
 }
 
